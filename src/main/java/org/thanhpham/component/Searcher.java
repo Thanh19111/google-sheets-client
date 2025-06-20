@@ -36,7 +36,7 @@ public class Searcher {
         return results;
     }
 
-    public List<Object> finaById(String range, String column, String query) throws IOException {
+    public List<Object> findById(String range, String column, String query) throws IOException {
         List<List<Object>> data = filterByKeyword(range, column, query);
         if (data == null || data.isEmpty()) {
             return new ArrayList<>();
@@ -49,7 +49,7 @@ public class Searcher {
         return data.getFirst();
     }
 
-    public List<List<Object>> finaAll(String range, String column, String query) throws IOException {
+    public List<List<Object>> findAll(String range, String column, String query) throws IOException {
         List<List<Object>> data = filterByKeyword(range, column, query);
 
         if (data == null || data.isEmpty()) {

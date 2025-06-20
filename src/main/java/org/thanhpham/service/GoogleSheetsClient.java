@@ -1,6 +1,7 @@
 package org.thanhpham.service;
 
 import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import org.thanhpham.component.*;
 import org.thanhpham.entity.Range;
@@ -47,12 +48,20 @@ public class GoogleSheetsClient {
     }
 
     //---------------------------------write---------------------------------//
-    public UpdateValuesResponse writeSheet(String range, List<List<Object>> values) throws IOException {
+    public UpdateValuesResponse updateRow(String range, List<Object> values) throws IOException {
         return writer.updateRow(range, values);
     }
 
-    public void appendRow(List<Object> data) throws IOException {
-        writer.appendRow(data);
+    public UpdateValuesResponse updateRows(String range, List<List<Object>> values) throws IOException {
+        return writer.updateRows(range, values);
+    }
+
+    public AppendValuesResponse appendRow(List<Object> data) throws IOException {
+        return writer.appendRow(data);
+    }
+
+    public AppendValuesResponse appendRows(List<List<Object>> data) throws IOException {
+        return writer.appendRows(data);
     }
 
     //---------------------------------remove---------------------------------//
@@ -82,11 +91,11 @@ public class GoogleSheetsClient {
     }
 
     public List<Object> findById(String range, String column, String id) throws IOException {
-        return searcher.finaById(range, column, id);
+        return searcher.findById(range, column, id);
     }
 
     public List<List<Object>> finaAll(String range, String column, String query) throws IOException {
-        return searcher.finaAll(range, column , query);
+        return searcher.findAll(range, column , query);
     }
 
     public List<Range> findPosition(String column, String range) throws IOException {

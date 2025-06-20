@@ -24,10 +24,11 @@ public class GoogleSheetsClient {
         this.initializer = new Initializer(sheetsService, spreadsheetId, sheetName);
         this.counter = new Counter(sheetsService, spreadsheetId, sheetName);
         this.addFormula = new AddFormula(sheetsService, spreadsheetId, sheetName);
-        this.searcher = new Searcher(this.reader);
+        this.searcher = new Searcher(this.reader, this.addFormula);
         this.remover = new Remover(searcher, sheetsService, sheetName, spreadsheetId);
     }
 
+    //---------------------------------init---------------------------------//
     public void initialize() throws IOException {
         initializer.initialize();
     }
@@ -36,50 +37,25 @@ public class GoogleSheetsClient {
         return initializer.getSheetId();
     }
 
-    public List<List<Object>> readSheet(String column, String row) throws IOException {
-        return reader.readSheet(column + ":" + row);
-    }
-
-    public UpdateValuesResponse writeSheet(String column, String row, List<List<Object>> values) throws IOException {
-        return writer.updateRow(column + ":" + row, values);
-    }
-
-    public List<List<Object>> search(String column, String row, String query) throws IOException {
-        return searcher.search(column + ":" + row, query);
-    }
-
-    public void fetchSheetSize() throws IOException {
-        counter.fetchSheetSize();
-    }
-
     public String getSpreadsheetId() {
         return initializer.getSpreadsheetId();
+    }
+
+    //---------------------------------read---------------------------------//
+    public List<List<Object>> readSheet(String range) throws IOException {
+        return reader.readSheet(range);
+    }
+
+    //---------------------------------write---------------------------------//
+    public UpdateValuesResponse writeSheet(String range, List<List<Object>> values) throws IOException {
+        return writer.updateRow(range, values);
     }
 
     public void appendRow(List<Object> data) throws IOException {
         writer.appendRow(data);
     }
 
-    public List<Object> findById(String column, String id) throws IOException {
-        return searcher.finaById(column + ":" + column, id);
-    }
-
-    public List<List<Object>> finaAll(String column, String query) throws IOException {
-        return searcher.finaAll(column + ":" + column, query);
-    }
-
-    public Integer getColumnCount() throws IOException {
-        return counter.getColumnCount();
-    }
-
-    public Integer getRowCount() throws IOException {
-        return counter.getRowCount();
-    }
-
-    public List<Range> findPosition(String column, String range) throws IOException {
-        return searcher.findPosition(column + ":" + column, range);
-    }
-
+    //---------------------------------remove---------------------------------//
     public void deleteById(Integer sheetId, String column, String id) throws IOException {
         remover.deleteById(sheetId, column + ":" + column, id);
     }
@@ -88,6 +64,48 @@ public class GoogleSheetsClient {
         remover.deleteAll(sheetId, column + ":" + column, query);
     }
 
+    public void deleteRow(Integer sheetId, String range) throws IOException {
+        remover.deleteRow(sheetId, range);
+    }
+
+    //---------------------------------search---------------------------------//
+    public List<List<Object>> search(String range, String query) throws IOException {
+        return searcher.search(range, query);
+    }
+
+    public List<List<Object>> filterIgnoreCase(String range, String column, String keyword) throws IOException {
+        return searcher.filterIgnoreCase(range, column, keyword);
+    }
+
+    public List<List<Object>> filterByKeyword(String range, String column, String keyword) throws IOException {
+        return searcher.filterByKeyword(range, column, keyword);
+    }
+
+    public List<Object> findById(String range, String column, String id) throws IOException {
+        return searcher.finaById(range, column, id);
+    }
+
+    public List<List<Object>> finaAll(String range, String column, String query) throws IOException {
+        return searcher.finaAll(range, column , query);
+    }
+
+    public List<Range> findPosition(String column, String range) throws IOException {
+        return searcher.findPosition(column + ":" + column, range);
+    }
+
+    public Integer match(String value, String range, Integer option) throws IOException {
+        return searcher.match(value, range, option);
+    }
+
+    public Integer existById (String value, String column) throws IOException {
+        return searcher.existById(value, column + ":" + column);
+    }
+
+    public Integer countRows(String value, String range) throws IOException {
+        return searcher.countRows(value, range);
+    }
+
+    //---------------------------------formula---------------------------------//
     public void clearValue(String cell) throws IOException {
         addFormula.clearValue(cell);
     }
@@ -98,5 +116,10 @@ public class GoogleSheetsClient {
 
     public String getValue(String formula) throws IOException {
         return addFormula.getValue(formula);
+    }
+
+    //---------------------------------count---------------------------------//
+    public void fetchSheetSize() throws IOException {
+        counter.fetchSheetSize();
     }
 }

@@ -40,45 +40,4 @@ public class Counter {
         System.out.println("Số hàng có dữ liệu: " + rowCount);
         System.out.println("Số cột tối đa có dữ liệu: " + maxColumnCount);
     }
-
-    public Integer getRowCount() throws IOException {
-        ValueRange response = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, sheetName)
-                .execute();
-
-        List<List<Object>> rows = response.getValues();
-
-        int rowCount = 0;
-
-        if (rows != null) {
-            for (List<Object> row : rows) {
-                boolean hasData = row.stream().anyMatch(cell -> cell != null && !cell.toString().isBlank());
-                if (hasData) {
-                    rowCount++;
-                }
-            }
-        }
-        return rowCount;
-    }
-
-    public Integer getColumnCount() throws IOException {
-        ValueRange response = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, sheetName)
-                .execute();
-
-        List<List<Object>> rows = response.getValues();
-
-        int maxColumnCount = 0;
-
-        if (rows != null) {
-            for (List<Object> row : rows) {
-                boolean hasData = row.stream().anyMatch(cell -> cell != null && !cell.toString().isBlank());
-                if (hasData) {
-                    maxColumnCount = Math.max(maxColumnCount, row.size());
-                }
-            }
-        }
-        return maxColumnCount;
-    }
-
 }

@@ -6,6 +6,7 @@ import org.thanhpham.util.AddFormula;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Searcher {
@@ -137,4 +138,33 @@ public class Searcher {
     public Integer existById(String value, String range) throws IOException {
         return match(value, range, 0);
     }
+
+    public List<Map.Entry<Integer, List<Object>>> findRowsWithIndex(String range, String column, String keyword, boolean allMatches) throws IOException, InterruptedException {
+        List<List<Object>> columnData = reader.readSheet(column + "1:" + column);
+        if (columnData == null || columnData.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Integer> matchingIndices = new ArrayList<>();
+        for (int i = 0; i < columnData.size(); i++) {
+            List<Object> cell = columnData.get(i);
+            if (!cell.isEmpty() && cell.getFirst() != null
+                    && cell.getFirst().toString().equals(keyword)) {
+                matchingIndices.add(i + 1);
+                if (!allMatches) break;
+            }
+        }
+
+        List<Map.Entry<Integer, List<Object>>> results = new ArrayList<>();
+        for (int index : matchingIndices) {
+            String rowRange = range.split(":")[0].replaceAll("\\d+", "") + index + ":" + range.split(":")[1].replaceAll("\\d+", "") + index;
+            List<List<Object>> rowData = reader.readSheet(rowRange);
+            if (rowData != null && !rowData.isEmpty()) {
+                results.add(Map.entry(index, rowData.getFirst()));
+            }
+        }
+
+        return results;
+    }
+
 }

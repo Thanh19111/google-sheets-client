@@ -9,6 +9,7 @@ import org.thanhpham.util.AddFormula;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class GoogleSheetsClient {
     private final Reader reader;
@@ -112,6 +113,10 @@ public class GoogleSheetsClient {
 
     public Integer countRows(String value, String range) throws IOException {
         return searcher.countRows(value, range);
+    }
+
+    public List<Map.Entry<Integer, List<Object>>> findRowsWithIndex(String range, String column, String keyword, boolean allMatches) throws IOException, InterruptedException {
+        return searcher.findRowsWithIndex(range,column, keyword, allMatches);
     }
 
     //---------------------------------formula---------------------------------//

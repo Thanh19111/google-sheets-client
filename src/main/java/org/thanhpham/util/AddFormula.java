@@ -19,11 +19,7 @@ public class AddFormula {
         this.spreadsheetId = spreadsheetId;
     }
 
-    public String getValue(String formula) throws IOException {
-        Random rand = new Random();
-        int number = rand.nextInt(100) + 1;
-        String cell = "Z" + number;
-
+    public String getValue(String formula, String cell) throws IOException {
         ValueRange body = new ValueRange()
                 .setValues(List.of(List.of(formula)));
         sheetsService.spreadsheets().values()
@@ -47,6 +43,7 @@ public class AddFormula {
     public void writeFormula(String cell, String formula) throws IOException {
             ValueRange body = new ValueRange()
                     .setValues(List.of(List.of(formula)));
+
             sheetsService.spreadsheets().values()
                     .update(spreadsheetId, sheetName + "!" + cell, body)
                     .setValueInputOption("USER_ENTERED")

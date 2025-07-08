@@ -4,7 +4,6 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import org.thanhpham.component.*;
-import org.thanhpham.entity.Range;
 import org.thanhpham.util.AddFormula;
 
 import java.io.IOException;
@@ -16,7 +15,6 @@ public class GoogleSheetsClient {
     private final Writer writer;
     private final Initializer initializer;
     private final Searcher searcher;
-    private final Counter counter;
     private final AddFormula addFormula;
     private final Remover remover;
 
@@ -24,10 +22,9 @@ public class GoogleSheetsClient {
         this.reader = new Reader(sheetsService, spreadsheetId, sheetName);
         this.writer = new Writer(sheetsService, spreadsheetId, sheetName);
         this.initializer = new Initializer(sheetsService, spreadsheetId, sheetName);
-        this.counter = new Counter(sheetsService, spreadsheetId, sheetName);
         this.addFormula = new AddFormula(sheetsService, spreadsheetId, sheetName);
         this.searcher = new Searcher(this.reader, this.addFormula);
-        this.remover = new Remover(searcher, sheetsService, sheetName, spreadsheetId);
+        this.remover = new Remover(searcher, sheetsService, spreadsheetId);
     }
 
     //---------------------------------init---------------------------------//
@@ -67,56 +64,45 @@ public class GoogleSheetsClient {
 
     //---------------------------------remove---------------------------------//
     public void deleteById(Integer sheetId, String column, String id) throws IOException {
-        remover.deleteById(sheetId, column + ":" + column, id);
+        remover.deleteById(sheetId, column, id);
     }
 
-    public void deleteAll(Integer sheetId, String column, String query) throws IOException {
-        remover.deleteAll(sheetId, column + ":" + column, query);
+    public void deleteAll(Integer sheetId, String column, String keyword) throws IOException {
+        remover.deleteAll(sheetId, column, keyword);
     }
 
-    public void deleteRow(Integer sheetId, String range) throws IOException {
-        remover.deleteRow(sheetId, range);
+    public void deleteRow(Integer sheetId, Integer index) throws IOException {
+        remover.deleteRow(sheetId, index);
     }
 
     //---------------------------------search---------------------------------//
-    public List<List<Object>> search(String range, String query) throws IOException {
-        return searcher.search(range, query);
+
+    public List<List<Object>> filterByKeyword(String range, String column, String keyword, boolean match) throws IOException {
+        return searcher.filterByKeyword(range, column, keyword, match);
     }
 
-    public List<List<Object>> filterIgnoreCase(String range, String column, String keyword) throws IOException {
-        return searcher.filterIgnoreCase(range, column, keyword);
+    public List<Object> findById(String range, String column, String id, boolean match) throws IOException {
+        return searcher.findById(range, column, id, match);
     }
 
-    public List<List<Object>> filterByKeyword(String range, String column, String keyword) throws IOException {
-        return searcher.filterByKeyword(range, column, keyword);
+    public List<List<Object>> finaAll(String range, String column, String keyword, boolean match) throws IOException {
+        return searcher.findAll(range, column, keyword, match);
     }
 
-    public List<Object> findById(String range, String column, String id) throws IOException {
-        return searcher.findById(range, column, id);
+    public Integer match(String value, String range, String cell, Integer option) throws IOException {
+        return searcher.match(value, range, cell, option);
     }
 
-    public List<List<Object>> finaAll(String range, String column, String query) throws IOException {
-        return searcher.findAll(range, column , query);
+    public Integer existById (String value,String cell, String column) throws IOException {
+        return searcher.existById(value, cell, column + ":" + column);
     }
 
-    public List<Range> findPosition(String column, String range) throws IOException {
-        return searcher.findPosition(column + ":" + column, range);
+    public Integer countRows(String value, String cell, String range) throws IOException {
+        return searcher.countRows(value, cell, range);
     }
 
-    public Integer match(String value, String range, Integer option) throws IOException {
-        return searcher.match(value, range, option);
-    }
-
-    public Integer existById (String value, String column) throws IOException {
-        return searcher.existById(value, column + ":" + column);
-    }
-
-    public Integer countRows(String value, String range) throws IOException {
-        return searcher.countRows(value, range);
-    }
-
-    public List<Map.Entry<Integer, List<Object>>> findRowsWithIndex(String range, String column, String keyword, boolean allMatches) throws IOException, InterruptedException {
-        return searcher.findRowsWithIndex(range,column, keyword, allMatches);
+    public List<Map.Entry<Integer, List<Object>>> findRowsWithIndex(String range, String column, String keyword, boolean match, boolean findAll) throws IOException, InterruptedException {
+        return searcher.findRowsWithIndex(range,column, keyword, match, findAll);
     }
 
     //---------------------------------formula---------------------------------//
@@ -128,12 +114,7 @@ public class GoogleSheetsClient {
         addFormula.writeFormula(cell, formula);
     }
 
-    public String getValue(String formula) throws IOException {
-        return addFormula.getValue(formula);
-    }
-
-    //---------------------------------count---------------------------------//
-    public void fetchSheetSize() throws IOException {
-        counter.fetchSheetSize();
+    public String getValue(String formula, String cell) throws IOException {
+        return addFormula.getValue(formula, cell);
     }
 }

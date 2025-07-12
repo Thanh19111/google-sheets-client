@@ -19,9 +19,6 @@ public class Searcher {
 
     public List<Object> findById(String range, String column, String keyword, boolean match) throws IOException {
         List<List<Object>> data = filterByKeyword(range, column, keyword, match);
-        if (data == null || data.isEmpty()) {
-            return new ArrayList<>();
-        }
 
         if(data.size() != 1){
             throw new IllegalStateException("Expected 1 record with ID " + keyword + ", but found " + data.size());
@@ -31,17 +28,12 @@ public class Searcher {
     }
 
     public List<List<Object>> findAll(String range, String column, String keyword, boolean match) throws IOException {
-        List<List<Object>> data = filterByKeyword(range, column, keyword, match);
-
-        if (data == null || data.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return data;
+        return filterByKeyword(range, column, keyword, match);
     }
 
     public Integer match(String value, String range, String cell, Integer option) {
         String query = String.format("=MATCH(\"%s\"; %s; %d)", value, range, option);
+
         try {
             return Integer.valueOf(addFormula.getValue(query,cell));
         } catch (Exception e){
@@ -60,9 +52,6 @@ public class Searcher {
 
     public List<List<Object>> filterByKeyword(String range, String column, String keyword, boolean match) throws IOException {
         List<List<Object>> data = reader.readSheet(range);
-        if (data == null || data.isEmpty()) {
-            return new ArrayList<>();
-        }
 
         int colIndex = column.charAt(0) - 'A';
         if(match){
@@ -98,11 +87,8 @@ public class Searcher {
 
     public List<Integer> findIndex(String column, String keyword, boolean match, boolean findAll) throws IOException {
         List<List<Object>> columnData = reader.readSheet(column + ":" + column);
-        if (columnData == null || columnData.isEmpty()) {
-            return new ArrayList<>();
-        }
-
         List<Integer> results = new ArrayList<>();
+
         if(match){
             for (int i = 0; i < columnData.size(); i++) {
                 List<Object> cell = columnData.get(i);

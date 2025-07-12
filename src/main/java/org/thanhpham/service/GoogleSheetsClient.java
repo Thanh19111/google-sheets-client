@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public class GoogleSheetsClient {
+public class GoogleSheetsClient implements IGoogleSheetClient{
     private final Reader reader;
     private final Writer writer;
     private final Initializer initializer;
@@ -85,7 +85,7 @@ public class GoogleSheetsClient {
         return searcher.findById(range, column, id, match);
     }
 
-    public List<List<Object>> finaAll(String range, String column, String keyword, boolean match) throws IOException {
+    public List<List<Object>> findAll(String range, String column, String keyword, boolean match) throws IOException {
         return searcher.findAll(range, column, keyword, match);
     }
 

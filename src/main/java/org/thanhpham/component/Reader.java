@@ -4,6 +4,7 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Reader {
@@ -22,6 +23,7 @@ public class Reader {
         ValueRange response = sheetsService.spreadsheets().values()
                 .get(spreadsheetId, fullRange)
                 .execute();
+        if(response.getValues() == null){return new ArrayList<>();}
         return response.getValues();
     }
 }

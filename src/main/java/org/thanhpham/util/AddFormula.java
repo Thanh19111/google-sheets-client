@@ -6,7 +6,6 @@ import com.google.api.services.sheets.v4.model.ValueRange;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 
 public class AddFormula {
     private final String spreadsheetId;

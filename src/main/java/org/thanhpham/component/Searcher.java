@@ -20,11 +20,11 @@ public class Searcher {
     public List<Object> findById(String range, String column, String keyword, boolean match) throws IOException {
         List<List<Object>> data = filterByKeyword(range, column, keyword, match);
 
-        if(data.size() != 1){
+        if(data.size() > 1){
             throw new IllegalStateException("Expected 1 record with ID " + keyword + ", but found " + data.size());
         }
 
-        return data.getFirst();
+        return data.isEmpty() ? new ArrayList<>() : data.getFirst();
     }
 
     public List<List<Object>> findAll(String range, String column, String keyword, boolean match) throws IOException {

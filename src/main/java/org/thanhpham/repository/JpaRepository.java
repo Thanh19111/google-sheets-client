@@ -32,7 +32,7 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
     @Override
     public Optional<P> findById(T id) throws IOException {
         List<Object> data =  client.findById(ConvertToIndex.getCharacter(0) + ":" + ConvertToIndex.getCharacter(field - 1)
-                , String.valueOf(ConvertToIndex.getCharacter(0)), id.toString(), true);
+                , String.valueOf(ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass))), id.toString(), true);
         if(data.isEmpty()){ return Optional.empty(); }
         return Optional.of(genericMapper.mapFromList(data));
     }
@@ -51,6 +51,10 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
 
     @Override
     public P save(P entity) throws IOException {
+        Optional<P> result = findById((T) GenericMapper.getIdFromEntity(entity));
+        if(result.isPresent()){
+            throw new RuntimeException("Entity already existed");
+        }
         client.appendRow(genericMapper.mapFromEntity(entity));
         return entity;
     }

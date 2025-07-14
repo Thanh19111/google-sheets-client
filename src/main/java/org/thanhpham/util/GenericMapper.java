@@ -3,10 +3,34 @@ package org.thanhpham.util;
 import org.thanhpham.anotation.Id;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.function.Function;
 
 public class GenericMapper<T> {
+    private static final Map<Class<?>, Function<String, Object>> PARSERS = new HashMap<>();
+
+    static {
+        PARSERS.put(Integer.class, Integer::parseInt);
+        PARSERS.put(int.class, Integer::parseInt);
+        PARSERS.put(Double.class, Double::parseDouble);
+        PARSERS.put(double.class, Double::parseDouble);
+        PARSERS.put(Boolean.class, Boolean::parseBoolean);
+        PARSERS.put(boolean.class, Boolean::parseBoolean);
+        PARSERS.put(Long.class, Long::parseLong);
+        PARSERS.put(long.class, Long::parseLong);
+        PARSERS.put(Float.class, Float::parseFloat);
+        PARSERS.put(float.class, Float::parseFloat);
+        PARSERS.put(LocalDate.class, LocalDate::parse);
+        PARSERS.put(LocalDateTime.class, LocalDateTime::parse);
+        PARSERS.put(String.class, s -> s);
+        PARSERS.put(BigDecimal.class, BigDecimal::new);
+        PARSERS.put(BigInteger.class, BigInteger::new);
+    }
+
     private final Class<T> clazz;
 
     public GenericMapper(Class<T> clazz) {
@@ -47,7 +71,7 @@ public class GenericMapper<T> {
             Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
                 field.setAccessible(true);
-                values.add(field.get(entity) == null ? " " : field.get(entity));
+                values.add(field.get(entity) == null ? " " : field.get(entity).toString());
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Cannot access the attribute", e);
@@ -82,38 +106,30 @@ public class GenericMapper<T> {
         throw new RuntimeException("No field annotated with @Id found");
     }
 
+    @SuppressWarnings("unchecked")
     private Object parseValue(Object value, Class<?> targetType) {
-        if (value != null && targetType.isAssignableFrom(value.getClass())) {
+        if (value == null) return null;
+
+        if (targetType.isAssignableFrom(value.getClass())) {
             return value;
         }
 
         if (value instanceof String stringValue) {
-            try {
-                if (targetType == int.class || targetType == Integer.class) {
-                    return Integer.parseInt(stringValue);
-                } else if (targetType == double.class || targetType == Double.class) {
-                    return Double.parseDouble(stringValue);
-                } else if (targetType == boolean.class || targetType == Boolean.class) {
-                    return Boolean.parseBoolean(stringValue);
-                } else if (targetType == long.class || targetType == Long.class) {
-                    return Long.parseLong(stringValue);
-                } else if (targetType == float.class || targetType == Float.class) {
-                    return Float.parseFloat(stringValue);
-                } else if (targetType == String.class) {
-                    return stringValue;
+            Function<String, Object> parser = PARSERS.get(targetType);
+            if (parser != null) {
+                try {
+                    return parser.apply(stringValue);
+                } catch (Exception e) {
+                    return null;
                 }
-            } catch (NumberFormatException e) {
-                return null;
+            } else if (targetType.isEnum()) {
+                return Enum.valueOf((Class<Enum>) targetType, stringValue);
             }
         }
 
-        if (value != null && !targetType.isAssignableFrom(value.getClass())) {
-            throw new IllegalArgumentException(
-                    "Unexpected data type: expected " + targetType.getSimpleName() +
-                            ", but got " + value.getClass().getSimpleName()
-            );
-        }
-
-        return value;
+        throw new IllegalArgumentException(
+                "Unexpected data type: expected " + targetType.getSimpleName() +
+                        ", but got " + value.getClass().getSimpleName()
+        );
     }
 }

@@ -19,9 +19,9 @@ public interface IGoogleSheetClient {
     public List<List<Object>> readSheet(String range) throws IOException;
 
     //---------------------------------write---------------------------------//
-    public UpdateValuesResponse updateRow(String range, List<Object> values) throws IOException;
+    public UpdateValuesResponse updateRow(String rangeWithIndex, List<Object> values) throws IOException;
 
-    public UpdateValuesResponse updateRows(String range, List<List<Object>> values) throws IOException;
+    public UpdateValuesResponse updateRows(String rangeWithIndex, List<List<Object>> values) throws IOException;
 
     public AppendValuesResponse appendRow(List<Object> data) throws IOException;
 
@@ -49,6 +49,8 @@ public interface IGoogleSheetClient {
     public Integer countRows(String value, String cell, String range) throws IOException;
 
     public List<Map.Entry<Integer, List<Object>>> findRowsWithIndex(String range, String column, String keyword, boolean match, boolean findAll) throws IOException, InterruptedException;
+
+    public List<Integer> findIndex(String column, String keyword, boolean match, boolean findAll) throws IOException;
     //---------------------------------formula---------------------------------//
     public void clearValue(String cell) throws IOException;
 

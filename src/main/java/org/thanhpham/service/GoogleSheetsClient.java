@@ -46,12 +46,12 @@ public class GoogleSheetsClient implements IGoogleSheetClient{
     }
 
     //---------------------------------write---------------------------------//
-    public UpdateValuesResponse updateRow(String range, List<Object> values) throws IOException {
-        return writer.updateRow(range, values);
+    public UpdateValuesResponse updateRow(String rangeWithIndex, List<Object> values) throws IOException {
+        return writer.updateRow(rangeWithIndex, values);
     }
 
-    public UpdateValuesResponse updateRows(String range, List<List<Object>> values) throws IOException {
-        return writer.updateRows(range, values);
+    public UpdateValuesResponse updateRows(String rangeWithIndex, List<List<Object>> values) throws IOException {
+        return writer.updateRows(rangeWithIndex, values);
     }
 
     public AppendValuesResponse appendRow(List<Object> data) throws IOException {
@@ -103,6 +103,10 @@ public class GoogleSheetsClient implements IGoogleSheetClient{
 
     public List<Map.Entry<Integer, List<Object>>> findRowsWithIndex(String range, String column, String keyword, boolean match, boolean findAll) throws IOException, InterruptedException {
         return searcher.findRowsWithIndex(range,column, keyword, match, findAll);
+    }
+
+    public List<Integer> findIndex(String column, String keyword, boolean match, boolean findAll) throws IOException {
+        return searcher.findIndex(column, keyword, match, findAll);
     }
 
     //---------------------------------formula---------------------------------//

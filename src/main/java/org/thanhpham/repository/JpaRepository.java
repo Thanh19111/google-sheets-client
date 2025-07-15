@@ -93,7 +93,7 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
     public P update(P entity, String cell) throws IOException {
         Integer index = client.existById(GenericMapper.getIdFromEntity(entity).toString(), cell, ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass)).toString());
         if(index != -1){
-            client.updateRow(ConvertToIndex.getCharacter(0) + ":" + ConvertToIndex.getCharacter(field - 1), genericMapper.mapFromEntity(entity));
+            client.updateRow(ConvertToIndex.getCharacter(0) + index.toString() + ":" + ConvertToIndex.getCharacter(field - 1) + index, genericMapper.mapFromEntity(entity));
             return entity;
         }else {
             throw new RuntimeException("Entity not found");
@@ -146,4 +146,16 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
         return result;
     }
 
+    public P update(P entity) throws IOException, InterruptedException {
+        String id = (String) GenericMapper.getIdFromEntity(entity);
+        List<Integer> result = client.findIndex(String.valueOf(ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass))), id, true, false);
+        if(result.isEmpty())
+        {
+            throw new RuntimeException("Entity with id = " + id + " not found");
+        }
+        Integer index = result.getFirst();
+        System.out.println(index);
+        client.updateRow(ConvertToIndex.getCharacter(0) + index.toString() + ":" + ConvertToIndex.getCharacter(field - 1) + index, genericMapper.mapFromEntity(entity));
+        return entity;
+    }
 }

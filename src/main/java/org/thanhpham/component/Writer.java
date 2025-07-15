@@ -19,8 +19,8 @@ public class Writer {
         this.sheetName = sheetName;
     }
 
-    public UpdateValuesResponse updateRow(String range, List<Object> values) throws IOException {
-        String fullRange = sheetName + "!" + range;
+    public UpdateValuesResponse updateRow(String rangeWithIndex, List<Object> values) throws IOException {
+        String fullRange = sheetName + "!" + rangeWithIndex;
         ValueRange body = new ValueRange().setValues(List.of(values));
 
         return sheetsService.spreadsheets().values()
@@ -29,8 +29,8 @@ public class Writer {
                 .execute();
     }
 
-    public UpdateValuesResponse updateRows(String range, List<List<Object>> values) throws IOException {
-        String fullRange = sheetName + "!" + range;
+    public UpdateValuesResponse updateRows(String rangeWithIndex, List<List<Object>> values) throws IOException {
+        String fullRange = sheetName + "!" + rangeWithIndex;
         ValueRange body = new ValueRange().setValues(values);
         return sheetsService.spreadsheets().values()
                 .update(spreadsheetId, fullRange, body)

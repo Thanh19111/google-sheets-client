@@ -31,7 +31,7 @@ public class Searcher {
         return filterByKeyword(range, column, keyword, match);
     }
 
-    public Integer match(String value, String range, String cell, Integer option) {
+    public Integer match(String value, String cell, String range, Integer option) {
         String query = String.format("=MATCH(\"%s\"; %s; %d)", value, range, option);
 
         try {

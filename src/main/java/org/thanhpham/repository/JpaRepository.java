@@ -51,11 +51,15 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
 
     @Override
     public P save(P entity) throws IOException {
-        Optional<P> result = findById((T) GenericMapper.getIdFromEntity(entity));
-        if(result.isPresent()){
-            throw new RuntimeException("Entity already existed");
+        String id = (String) GenericMapper.getIdFromEntity(entity);
+        List<Integer> result = client.findIndex(String.valueOf(ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass))), id, true, false);
+        if(result.isEmpty())
+        {
+            client.appendRow(genericMapper.mapFromEntity(entity));
+            return entity;
         }
-        client.appendRow(genericMapper.mapFromEntity(entity));
+        Integer index = result.getFirst();
+        client.updateRow(ConvertToIndex.getCharacter(0) + index.toString() + ":" + ConvertToIndex.getCharacter(field - 1) + index, genericMapper.mapFromEntity(entity));
         return entity;
     }
 
@@ -87,17 +91,7 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
 
     @Override
     public void delete(P entity) throws IOException {
-        client.deleteById(client.getSheetId(), GenericMapper.getIdFromEntity(entity).toString(),ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass)).toString());
-    }
-
-    public P update(P entity, String cell) throws IOException {
-        Integer index = client.existById(GenericMapper.getIdFromEntity(entity).toString(), cell, ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass)).toString());
-        if(index != -1){
-            client.updateRow(ConvertToIndex.getCharacter(0) + index.toString() + ":" + ConvertToIndex.getCharacter(field - 1) + index, genericMapper.mapFromEntity(entity));
-            return entity;
-        }else {
-            throw new RuntimeException("Entity not found");
-        }
+        client.deleteById(client.getSheetId(), ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass)).toString(), GenericMapper.getIdFromEntity(entity).toString());
     }
 
     public List<P> findAll(String column, String keyword, boolean match) throws IOException {
@@ -144,18 +138,5 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
 
         ListUtil.sortList(result, sort);
         return result;
-    }
-
-    public P update(P entity) throws IOException, InterruptedException {
-        String id = (String) GenericMapper.getIdFromEntity(entity);
-        List<Integer> result = client.findIndex(String.valueOf(ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass))), id, true, false);
-        if(result.isEmpty())
-        {
-            throw new RuntimeException("Entity with id = " + id + " not found");
-        }
-        Integer index = result.getFirst();
-        System.out.println(index);
-        client.updateRow(ConvertToIndex.getCharacter(0) + index.toString() + ":" + ConvertToIndex.getCharacter(field - 1) + index, genericMapper.mapFromEntity(entity));
-        return entity;
     }
 }

@@ -12,7 +12,6 @@ public interface CRUDRepository<P, T> {
     boolean existsById(T id, String cell) throws IOException;
     void deleteById(T id) throws IOException;
     void delete(P entity) throws IOException;
-    P update(P entity, String cell) throws IOException;
     List<P> findAll(String column, String keyword, boolean match) throws IOException;
     List<P> findALl() throws IOException;
 }

@@ -2,10 +2,12 @@ package org.thanhpham.component;
 
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.*;
+import org.thanhpham.util.ProcessManager;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 public class Remover {
     private final Searcher searcher;
@@ -40,18 +42,23 @@ public class Remover {
     }
 
     public void deleteRow(Integer sheetId, Integer rowIndex) throws IOException {
-        Request deleteRowRequest = new Request().setDeleteDimension(
-                new DeleteDimensionRequest()
-                        .setRange(new DimensionRange()
-                                .setSheetId(sheetId)
-                                .setDimension("ROWS")
-                                .setStartIndex(rowIndex - 1)
-                                .setEndIndex(rowIndex))
-        );
+        try{
+            ProcessManager.setStatus(true);
+            Request deleteRowRequest = new Request().setDeleteDimension(
+                    new DeleteDimensionRequest()
+                            .setRange(new DimensionRange()
+                                    .setSheetId(sheetId)
+                                    .setDimension("ROWS")
+                                    .setStartIndex(rowIndex - 1)
+                                    .setEndIndex(rowIndex))
+            );
 
-        BatchUpdateSpreadsheetRequest batchRequest = new BatchUpdateSpreadsheetRequest()
-                .setRequests(List.of(deleteRowRequest));
+            BatchUpdateSpreadsheetRequest batchRequest = new BatchUpdateSpreadsheetRequest()
+                    .setRequests(List.of(deleteRowRequest));
 
-        sheetsService.spreadsheets().batchUpdate(spreadsheetId, batchRequest).execute();
+            sheetsService.spreadsheets().batchUpdate(spreadsheetId, batchRequest).execute();
+        } finally {
+            ProcessManager.setStatus(false);
+        }
     }
 }

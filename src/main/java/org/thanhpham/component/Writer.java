@@ -4,6 +4,8 @@ import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import org.thanhpham.util.ConvertToIndex;
+import org.thanhpham.util.ProcessManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,21 +23,29 @@ public class Writer {
 
     public UpdateValuesResponse updateRow(String rangeWithIndex, List<Object> values) throws IOException {
         String fullRange = sheetName + "!" + rangeWithIndex;
-        ValueRange body = new ValueRange().setValues(List.of(values));
+        int index = ConvertToIndex.parseIndex(rangeWithIndex);
 
-        return sheetsService.spreadsheets().values()
-                .update(spreadsheetId, fullRange, body)
-                .setValueInputOption("RAW")
-                .execute();
+        try(ProcessManager.ProcessingLock ignored = ProcessManager.waitForLock(index)){
+            ValueRange body = new ValueRange().setValues(List.of(values));
+            return sheetsService.spreadsheets().values()
+                    .update(spreadsheetId, fullRange, body)
+                    .setValueInputOption("RAW")
+                    .execute();
+        }
     }
 
     public UpdateValuesResponse updateRows(String rangeWithIndex, List<List<Object>> values) throws IOException {
         String fullRange = sheetName + "!" + rangeWithIndex;
-        ValueRange body = new ValueRange().setValues(values);
-        return sheetsService.spreadsheets().values()
-                .update(spreadsheetId, fullRange, body)
-                .setValueInputOption("RAW")
-                .execute();
+        int index = ConvertToIndex.parseIndex(rangeWithIndex);
+
+        try(ProcessManager.ProcessingLock ignored = ProcessManager.waitForLock(index)){
+            ValueRange body = new ValueRange().setValues(values);
+
+            return sheetsService.spreadsheets().values()
+                    .update(spreadsheetId, fullRange, body)
+                    .setValueInputOption("RAW")
+                    .execute();
+        }
     }
 
     public AppendValuesResponse appendRow(List<Object> values) throws IOException {

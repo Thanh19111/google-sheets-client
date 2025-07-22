@@ -7,6 +7,7 @@ import org.thanhpham.service.IGoogleSheetClient;
 import org.thanhpham.util.ConvertToIndex;
 import org.thanhpham.util.GenericMapper;
 import org.thanhpham.util.ListUtil;
+import org.thanhpham.util.ProcessManager;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
@@ -58,6 +59,7 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
             client.appendRow(genericMapper.mapFromEntity(entity));
             return entity;
         }
+        
         Integer index = result.getFirst();
         client.updateRow(ConvertToIndex.getCharacter(0) + index.toString() + ":" + ConvertToIndex.getCharacter(field - 1) + index, genericMapper.mapFromEntity(entity));
         return entity;

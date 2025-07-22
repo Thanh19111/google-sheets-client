@@ -28,4 +28,13 @@ public class ConvertToIndex {
     public static Integer getIndex(Character character){
         return map.get(character);
     }
+
+    public static int parseIndex(String input){
+        for (char c : input.toCharArray()) {
+            if (Character.isDigit(c)) {
+                return Integer.parseInt(String.valueOf(c));
+            }
+        }
+        throw new RuntimeException("Error to get index from field");
+    }
 }

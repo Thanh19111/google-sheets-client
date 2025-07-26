@@ -7,7 +7,6 @@ import org.thanhpham.service.IGoogleSheetClient;
 import org.thanhpham.util.ConvertToIndex;
 import org.thanhpham.util.GenericMapper;
 import org.thanhpham.util.ListUtil;
-import org.thanhpham.util.ProcessManager;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
@@ -36,6 +35,35 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
                 , String.valueOf(ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass))), id.toString(), true);
         if(data.isEmpty()){ return Optional.empty(); }
         return Optional.of(genericMapper.mapFromList(data));
+    }
+
+    @Override
+    public boolean existAllById(Iterable<T> ids) throws IOException {
+        Set<T> iteratorValues = new HashSet<>();
+        ids.forEach(iteratorValues::add);
+        Character column = ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass));
+
+        List<List<Object>> result = client.readSheet(column.toString() + ":" + column).stream()
+                .distinct()
+                .filter(
+                t -> iteratorValues.contains(t.getFirst())
+        ).toList();
+
+        return result.size() == iteratorValues.size();
+    }
+
+    @Override
+    public boolean existAllByColumn(Iterable<T> ids, String column) throws IOException {
+        Set<T> iteratorValues = new HashSet<>();
+        ids.forEach(iteratorValues::add);
+
+        List<List<Object>> result = client.readSheet(column + ":" + column).stream()
+                .distinct()
+                .filter(
+                t -> iteratorValues.contains(t.getFirst())
+        ).toList();
+
+        return result.size() == iteratorValues.size();
     }
 
     @Override
@@ -87,8 +115,9 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
     }
 
     @Override
-    public boolean existsById(T id, String cell) throws IOException {
-        return client.existById((String) id, cell, ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass)).toString()) != -1;
+    public boolean existsById(T id) throws IOException {
+        Integer index = ConvertToIndex.getNumber(1000);
+        return client.existById((String) id, "Z" + index, ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass)).toString()) != -1;
     }
 
     @Override
@@ -96,27 +125,16 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
         client.deleteById(client.getSheetId(), ConvertToIndex.getCharacter(GenericMapper.getIndexOfIdField(entityClass)).toString(), GenericMapper.getIdFromEntity(entity).toString());
     }
 
+    @Override
     public List<P> findAll(String column, String keyword, boolean match) throws IOException {
         return client.findAll(ConvertToIndex.getCharacter(0) + ":" + ConvertToIndex.getCharacter(field - 1), column, keyword, match).stream().map(
                 genericMapper::mapFromList
         ).toList();
     }
 
+    @Override
     public void deleteAll(String column, String keyword) throws IOException {
         client.deleteAll(client.getSheetId(), column, keyword);
-    }
-
-    public List<P> filterByKeyword(String column, String keyword, boolean match) throws IOException {
-        return client.filterByKeyword(ConvertToIndex.getCharacter(0) + ":" + ConvertToIndex.getCharacter(field - 1), column, keyword, match).stream().map(
-                genericMapper::mapFromList
-        ).toList();
-    }
-
-    public List<Map.Entry<Integer, P>> findRowsWithIndex(String column, String keyword, boolean match, boolean findAll) throws IOException, InterruptedException {
-        return client.findRowsWithIndex(ConvertToIndex.getCharacter(0) + ":" + ConvertToIndex.getCharacter(field - 1), column, keyword, match, findAll)
-                .stream().map(
-                        t -> Map.entry(t.getKey(), genericMapper.mapFromList(t.getValue())))
-                .toList();
     }
 
     @Override
@@ -140,5 +158,18 @@ public abstract class JpaRepository<P,T> implements CRUDRepository<P,T>, PagingA
 
         ListUtil.sortList(result, sort);
         return result;
+    }
+
+    public List<P> filterByKeyword(String column, String keyword, boolean match) throws IOException {
+        return client.filterByKeyword(ConvertToIndex.getCharacter(0) + ":" + ConvertToIndex.getCharacter(field - 1), column, keyword, match).stream().map(
+                genericMapper::mapFromList
+        ).toList();
+    }
+
+    public List<Map.Entry<Integer, P>> findRowsWithIndex(String column, String keyword, boolean match, boolean findAll) throws IOException, InterruptedException {
+        return client.findRowsWithIndex(ConvertToIndex.getCharacter(0) + ":" + ConvertToIndex.getCharacter(field - 1), column, keyword, match, findAll)
+                .stream().map(
+                        t -> Map.entry(t.getKey(), genericMapper.mapFromList(t.getValue())))
+                .toList();
     }
 }

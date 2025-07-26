@@ -9,9 +9,12 @@ public interface CRUDRepository<P, T> {
     List<P> findAllById(Iterable<T> ids) throws IOException;
     P save(P entity) throws IOException;
     List<P> saveAll(Iterable<P> entities) throws IOException;
-    boolean existsById(T id, String cell) throws IOException;
+    boolean existsById(T id) throws IOException;
     void deleteById(T id) throws IOException;
     void delete(P entity) throws IOException;
     List<P> findAll(String column, String keyword, boolean match) throws IOException;
     List<P> findALl() throws IOException;
+    boolean existAllById(Iterable<T> ids) throws IOException;
+    void deleteAll(String column, String keyword) throws IOException;
+    boolean existAllByColumn(Iterable<T> ids, String column) throws IOException;
 }

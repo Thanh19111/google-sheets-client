@@ -1,10 +1,17 @@
 package org.thanhpham.util;
 
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ConvertToIndex {
+    private static final Random rand = new Random();
+
+    public static Integer getNumber(Integer range){
+        return rand.nextInt(range) + 1;
+    }
+
     public static final Map<Character, Integer> map =
             IntStream.rangeClosed('A', 'Z')
                     .boxed()

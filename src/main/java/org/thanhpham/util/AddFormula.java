@@ -19,18 +19,23 @@ public class AddFormula {
     }
 
     public String getValue(String formula, String cell) throws IOException {
-        ValueRange body = new ValueRange()
-                .setValues(List.of(List.of(formula)));
-        sheetsService.spreadsheets().values()
-                .update(spreadsheetId, sheetName + "!" + cell, body)
-                .setValueInputOption("USER_ENTERED")
-                .execute();
-        ValueRange result = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, sheetName + "!" + cell)
-                .execute();
-        String resultValue = result.getValues().getFirst().getFirst().toString();
-        this.clearValue(cell);
-        return resultValue;
+        int index = ConvertToIndex.parseIndex(cell);
+
+        try(ProcessManager.ProcessingLock ignored = ProcessManager.waitForLock(index)){
+            ValueRange body = new ValueRange()
+                    .setValues(List.of(List.of(formula)));
+            sheetsService.spreadsheets().values()
+                    .update(spreadsheetId, sheetName + "!" + cell, body)
+                    .setValueInputOption("USER_ENTERED")
+                    .execute();
+
+            ValueRange result = sheetsService.spreadsheets().values()
+                    .get(spreadsheetId, sheetName + "!" + cell)
+                    .execute();
+
+            return result.getValues().getFirst().getFirst().toString();
+        }
+
     }
 
     public void clearValue(String cell) throws IOException {
